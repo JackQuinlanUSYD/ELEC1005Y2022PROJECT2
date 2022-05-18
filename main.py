@@ -5,7 +5,7 @@ Created on Wed May 16 15:22:20 2018
 @author: zou
 """
 
-
+from cmath import rect
 from tkinter import CENTER
 import pygame
 import time
@@ -40,14 +40,17 @@ bright_blue = pygame.Color(32, 200, 200)
 yellow = pygame.Color(255, 205, 0)
 bright_yellow = pygame.Color(255, 255, 0)
 
+
 game = Game()
 rect_len = game.settings.rect_len
 snake = game.snake
 pygame.init()
 fpsClock = pygame.time.Clock()
 screen = pygame.display.set_mode((game.settings.width * 15, game.settings.height * 15))
-pygame.display.set_caption('Gluttonous')
+pygame.display.set_caption('Gluttony')
 
+crash_img = pygame.image.load("images/splat.bmp")
+crash_img = pygame.transform.scale(crash_img, (400,400))
 crash_sound = pygame.mixer.Sound('./sound/crash.wav')
 
 title_font = pygame.font.Font("images/Fonts/Wicked_Mouse.ttf", 35)
@@ -73,7 +76,7 @@ def text_objects(text, font, color=black):
 
 
 def message_display(text, x, y, color=black):
-    large_text = pygame.font.SysFont('comicsansms', 50)
+    large_text = pygame.font.SysFont('WASTED', 50)
     text_surf, text_rect = text_objects(text, large_text, color)
     text_rect.center = (x, y)
     screen.blit(text_surf, text_rect)
@@ -105,16 +108,19 @@ def quitgame():
 
 def crash(): #when the player crashes to themselves, a sound plays and a defeat message displays
     pygame.mixer.Sound.play(crash_sound)
-    message_display('crashed', 
-                    game.settings.width / 2 * 15,
-                    game.settings.height / 3 * 15, 
-                    white)# can change to wasted here
+    screen.blit(crash_img, (0,0))
+    pygame.display.flip()
+    time.sleep(2)
+    pygame.mixer.Sound.play(crash_sound)
+
+    message_display('WASTED', game.settings.width / 2 * 15, game.settings.height / 3 * 20, black)
     time.sleep(1)
         
 def initial_interface(): #menu
     intro = True
     stop_loop = False
     while intro:
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT or intro == False:
@@ -136,18 +142,23 @@ def initial_interface(): #menu
         button('', 165, 280, 90, 35, scroll_clsd_off, scroll_clsd, instruct_screen)
 
         pygame.display.update()
-        pygame.time.Clock().tick(15)
+        pygame.time.Clock().tick(1500)
 
 
-def game_loop(player, fps=10):
+def game_loop(player, fps=10): #10
     game.restart_game()
 
+    fps = 5
+    prev_score = 0
     while not game.game_end():
 
         pygame.event.pump()
 
         move = human_move()
-        fps = 5
+        #added code
+        if (game.snake.score - prev_score == 3) and (fps < 40):
+            prev_score = game.snake.score
+            fps += 1
 
         game.do_move(move)
 
