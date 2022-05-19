@@ -16,10 +16,10 @@ class Settings:
 class Snake:
     def __init__(self):
         
-        self.image_up = pygame.image.load('images/head_up.bmp')
-        self.image_down = pygame.image.load('images/head_down.bmp')
-        self.image_left = pygame.image.load('images/head_left.bmp')
-        self.image_right = pygame.image.load('images/head_right.bmp')
+        self.image_up = pygame.image.load('images/snake_head_up.png')
+        self.image_down = pygame.image.load('images/snake_head_down.png')
+        self.image_left = pygame.image.load('images/snake_head_left_side.png')
+        self.image_right = pygame.image.load('images/snake_head_right_side.png')
 
         self.tail_up = pygame.image.load('images/tail_up.bmp')
         self.tail_down = pygame.image.load('images/tail_down.bmp')
@@ -83,13 +83,19 @@ class Strawberry():
     def __init__(self, settings):
         self.settings = settings
         
-        self.style = str(random.randint(1, 8))
-        self.image = pygame.image.load('images/food' + str(self.style) + '.bmp')        
+        self.style = str(random.randint(1, 7))
+        self.image = pygame.image.load('images/food' + str(self.style) + '.png')    
+
+        self.change_time = 0
+
         self.initialize()
         
     def random_pos(self, snake):
+        #added
+        self.change_time = 0
+
         self.style = str(random.randint(1, 8))
-        self.image = pygame.image.load('images/food' + str(self.style) + '.bmp')                
+        self.image = pygame.image.load('images/food' + str(self.style) + '.png')           
         
         self.position[0] = random.randint(0, self.settings.width-1)
         self.position[1] = random.randint(0, self.settings.height-1)
@@ -99,6 +105,12 @@ class Strawberry():
         
         if self.position in snake.segments:
             self.random_pos(snake)
+
+        #added code
+        elif self.style == '8':
+            self.change_time = pygame.time.get_ticks() + 3000
+        #end of added code
+            
 
     def blit(self, screen):
         screen.blit(self.image, [p * self.settings.rect_len for p in self.position])
@@ -157,15 +169,22 @@ class Game:
         self.snake.update()
         
         if self.snake.position == self.strawberry.position:
-            self.strawberry.random_pos(self.snake)
-            reward = 1
-            self.snake.score += 1 #snake score
+            if self.strawberry.style != '8':
+                self.strawberry.random_pos(self.snake)
+                reward = 1
+                self.snake.score += 1 #snake score
+
         else:
             self.snake.segments.pop()
             reward = 0
                 
         if self.game_end():
             return -1
+
+        #added code
+        if self.strawberry.style == '8':
+            if pygame.time.get_ticks() > self.strawberry.change_time:
+                self.strawberry.random_pos(self.snake)
                     
         return reward
     
@@ -176,6 +195,9 @@ class Game:
         if self.snake.position[1] >= self.settings.height or self.snake.position[1] < 0:
             end = True
         if self.snake.segments[0] in self.snake.segments[1:]:
+            end = True
+        #added code
+        if self.strawberry.style == '8' and self.snake.position == self.strawberry.position:
             end = True
 
         return end
