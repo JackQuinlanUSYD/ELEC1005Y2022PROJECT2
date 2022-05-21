@@ -165,6 +165,8 @@ class Game:
                           1 : 'down',
                           2 : 'left',
                           3 : 'right'}       
+        pygame.init()
+        self.munch_sound = pygame.mixer.Sound('./sound/munch-sound-effect.mp3')
         
     def restart_game(self):
         self.snake.initialize()
@@ -206,6 +208,7 @@ class Game:
         
         if self.snake.position == self.strawberry.position:
             if self.strawberry.style != '8':
+                pygame.mixer.Sound.play(self.munch_sound)
                 if int(self.strawberry.style) < 4:
                     self.snake.score += 1 * self.snake.multiplier
                 elif int(self.strawberry.style) < 7:

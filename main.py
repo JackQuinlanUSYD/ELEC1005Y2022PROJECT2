@@ -162,7 +162,7 @@ def game_loop(player, fps=10): #10
 
         move = human_move()
         #added code
-        if (game.snake.score - prev_score == 3) and (fps < 40):
+        if (game.snake.score - prev_score >= 3) and (fps < 40):
             prev_score = game.snake.score
             fps += 1
         
