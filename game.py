@@ -113,6 +113,7 @@ class Game:
         self.settings = Settings()
         self.snake = Snake()
         self.strawberry = Strawberry(self.settings)
+        self.collide = False
         self.move_dict = {0 : 'up',
                           1 : 'down',
                           2 : 'left',
@@ -142,8 +143,8 @@ class Game:
         
     def do_move(self, move):
         move_dict = self.move_dict
-        
         change_direction = move_dict[move]
+        self.collide = False
         
         if change_direction == 'right' and not self.snake.facing == 'left':
             self.snake.facing = change_direction
@@ -160,13 +161,14 @@ class Game:
             self.strawberry.random_pos(self.snake)
             reward = 1
             self.snake.score += 1 #snake score
+            self.collide = True
         else:
             self.snake.segments.pop()
             reward = 0
                 
         if self.game_end():
             return -1
-                    
+
         return reward
     
     def game_end(self):

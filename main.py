@@ -57,6 +57,7 @@ pygame.display.set_caption('Gluttony')
 crash_img = pygame.image.load("images/splat.bmp")
 crash_img = pygame.transform.scale(crash_img, (400,400))
 crash_sound = pygame.mixer.Sound('./sound/crash.wav')
+munch_sound = pygame.mixer.Sound('./sound/munch.wav')
 
 title_font = pygame.font.Font("images/Fonts/Wicked_Mouse.ttf", 35)
 instruct_font = pygame.font.Font('images/Fonts/Minecraft.ttf', 14)
@@ -126,13 +127,12 @@ def crash(): #when the player crashes to themselves, a sound plays and a defeat 
         
 def initial_interface(): #menu
     intro = True
-    stop_loop = False
     while intro:
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT or intro == False:
                 quitgame()
-
+                
         screen.fill(white) #starting screen display
         screen.blit(background, (0, 0))
 
@@ -154,7 +154,7 @@ def initial_interface(): #menu
 
         button('', 165, 280, 90, 35, 
                scroll_clsd_off, scroll_clsd, 
-              instruct_screen, 1)
+               instruct_screen, 1)
 
         pygame.display.update()
         pygame.time.Clock().tick(1500)
@@ -182,6 +182,8 @@ def game_loop(player, fps=10): #10
 
         game.snake.blit(rect_len, screen)
         game.strawberry.blit(screen)
+        if game.collide:
+            pygame.mixer.Sound.play(munch_sound)
         game.blit_score(white, screen)
 
         pygame.display.flip()
