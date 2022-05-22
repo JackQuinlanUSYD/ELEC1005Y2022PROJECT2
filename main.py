@@ -61,7 +61,6 @@ pygame.display.set_caption('Gluttony')
 crash_img = pygame.image.load("images/splat.bmp")
 crash_img = pygame.transform.scale(crash_img, (400,400))
 crash_sound = pygame.mixer.Sound('./sound/crash.wav')
-munch_sound = pygame.mixer.Sound('./sound/munch.wav')
 
 title_font = pygame.font.Font("images/Fonts/Wicked_Mouse.ttf", 35)
 instruct_font = pygame.font.Font('images/Fonts/Minecraft.ttf', 14)
@@ -193,8 +192,6 @@ def game_loop(player, fps=10): #10
 
         game.snake.blit(rect_len, screen)
         game.strawberry.blit(screen)
-        if game.collide:
-            pygame.mixer.Sound.play(munch_sound)
         game.blit_score(white, screen)
 
         if game.snake.multiplier == 2:
