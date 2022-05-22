@@ -210,7 +210,7 @@ class Game:
         if self.snake.position == self.strawberry.position:
             if self.strawberry.style != '8':
                 pygame.mixer.Sound.play(self.munch_sound)
-                if int(self.strawberry.style) < 4:
+                if int(self.strawberry.style) < 5:
                     self.snake.score += 1 * self.snake.multiplier
                 elif int(self.strawberry.style) < 7:
                     self.snake.score += 2 * self.snake.multiplier
