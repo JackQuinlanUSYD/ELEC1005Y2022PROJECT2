@@ -15,26 +15,35 @@ class Settings:
 
 class Snake:
     def __init__(self):
+        #added variables
+        self.multiplier = 1
+        self.speed_added = 0
+        self.death = 'CRASHED'
         
-        self.image_up = pygame.image.load('images/head_up.bmp')
-        self.image_down = pygame.image.load('images/head_down.bmp')
-        self.image_left = pygame.image.load('images/head_left.bmp')
-        self.image_right = pygame.image.load('images/head_right.bmp')
+        self.image_up = pygame.image.load('images/snake_head_up.png')
+        self.image_down = pygame.image.load('images/snake_head_down.png')
+        self.image_left = pygame.image.load('images/snake_head_left_side.png')
+        self.image_right = pygame.image.load('images/snake_head_right_side.png')
 
-        self.tail_up = pygame.image.load('images/tail_up.bmp')
-        self.tail_down = pygame.image.load('images/tail_down.bmp')
-        self.tail_left = pygame.image.load('images/tail_left.bmp')
-        self.tail_right = pygame.image.load('images/tail_right.bmp')
+        self.tail_up = pygame.image.load('images/tail_up.png')
+        self.tail_down = pygame.image.load('images/tail_down.png')
+        self.tail_left = pygame.image.load('images/tail_left.png')
+        self.tail_right = pygame.image.load('images/tail_right.png')
             
-        self.image_body = pygame.image.load('images/body.bmp')
+        self.image_body = pygame.image.load('images/body.png')
 
         self.facing = "right"
         self.initialize()
 
     def initialize(self):
         self.position = [6, 6]
+        self.facing = "right"
         self.segments = [[6 - i, 6] for i in range(3)]
+        self.remove_helmet()
         self.score = 0
+        self.death = 'CRASHED'
+        self.helmet_duration = -1
+        self.speed_added = 0
 
     def blit_body(self, x, y, screen):
         screen.blit(self.image_body, (x, y))
@@ -78,18 +87,51 @@ class Snake:
         if self.facing == 'down':
             self.position[1] += 1
         self.segments.insert(0, list(self.position))
+
+    #added helmet
+    def add_helmet(self):
+
+        self.multiplier = 2
+        self.speed_added = 10
+
+        self.image_up = pygame.image.load('images/snake_head_up_helmet.png')
+        self.image_down = pygame.image.load('images/snake_head_down_helmet.png')
+        self.image_left = pygame.image.load('images/snake_head_left_side_helmet.png')
+        self.image_right = pygame.image.load('images/snake_head_right_side_helmet.png')
+
+        self.helmet_duration = pygame.time.get_ticks() + 8000
+        
+
+    def remove_helmet(self):
+
+        self.multiplier = 1
+        self.speed_added = 0
+
+        self.image_up = pygame.image.load('images/snake_head_up.png')
+        self.image_down = pygame.image.load('images/snake_head_down.png')
+        self.image_left = pygame.image.load('images/snake_head_left_side.png')
+        self.image_right = pygame.image.load('images/snake_head_right_side.png')
+
+    #added code ended
+
         
 class Strawberry():
     def __init__(self, settings):
         self.settings = settings
         
-        self.style = str(random.randint(1, 8))
-        self.image = pygame.image.load('images/food' + str(self.style) + '.bmp')        
+        self.style = str(random.randint(1, 7))
+        self.image = pygame.image.load('images/food' + str(self.style) + '.png')    
+
+        self.change_time = 0
+
         self.initialize()
         
     def random_pos(self, snake):
+        #added
+        self.change_time = 0
+
         self.style = str(random.randint(1, 8))
-        self.image = pygame.image.load('images/food' + str(self.style) + '.bmp')                
+        self.image = pygame.image.load('images/food' + str(self.style) + '.png')           
         
         self.position[0] = random.randint(0, self.settings.width-1)
         self.position[1] = random.randint(0, self.settings.height-1)
@@ -99,6 +141,12 @@ class Strawberry():
         
         if self.position in snake.segments:
             self.random_pos(snake)
+
+        #added code
+        elif self.style == '8':
+            self.change_time = pygame.time.get_ticks() + 3000
+        #end of added code
+            
 
     def blit(self, screen):
         screen.blit(self.image, [p * self.settings.rect_len for p in self.position])
@@ -118,6 +166,8 @@ class Game:
                           1 : 'down',
                           2 : 'left',
                           3 : 'right'}       
+        pygame.init()
+        self.munch_sound = pygame.mixer.Sound('./sound/munch-sound-effect.mp3')
         
     def restart_game(self):
         self.snake.initialize()
@@ -158,10 +208,24 @@ class Game:
         self.snake.update()
         
         if self.snake.position == self.strawberry.position:
-            self.strawberry.random_pos(self.snake)
-            reward = 1
-            self.snake.score += 1 #snake score
-            self.collide = True
+            if self.strawberry.style != '8':
+                pygame.mixer.Sound.play(self.munch_sound)
+                if int(self.strawberry.style) < 4:
+                    self.snake.score += 1 * self.snake.multiplier
+                elif int(self.strawberry.style) < 7:
+                    self.snake.score += 2 * self.snake.multiplier
+                elif self.strawberry.style == '7':
+                    self.snake.score += 3 * self.snake.multiplier
+                    
+
+                self.strawberry.random_pos(self.snake)
+                reward = 1
+                self.collide = True
+                #added code
+                if self.snake.score % 10 == 0:
+                    self.snake.add_helmet()
+                
+
         else:
             self.snake.segments.pop()
             reward = 0
@@ -169,6 +233,13 @@ class Game:
         if self.game_end():
             return -1
 
+        #added code
+        if self.strawberry.style == '8':
+            if pygame.time.get_ticks() > self.strawberry.change_time:
+                self.strawberry.random_pos(self.snake)
+
+        if self.snake.helmet_duration < pygame.time.get_ticks():
+            self.snake.remove_helmet()
         return reward
     
     def game_end(self):
@@ -178,6 +249,10 @@ class Game:
         if self.snake.position[1] >= self.settings.height or self.snake.position[1] < 0:
             end = True
         if self.snake.segments[0] in self.snake.segments[1:]:
+            end = True
+        #added code
+        if self.strawberry.style == '8' and self.snake.position == self.strawberry.position:
+            self.snake.death = 'BAD APPLE'
             end = True
 
         return end

@@ -17,6 +17,10 @@ from game import Game
 #colors
 black = pygame.Color(0, 0, 0)
 white = pygame.Color(255, 255, 255)
+
+gold = pygame.Color(255, 191, 0)
+red = pygame.Color(255, 90, 0)
+pink = pygame.Color(255, 16, 240)
 yellow = pygame.Color(255, 191, 0)
 lBrown = pygame.Color(106, 78, 66)
 brown = pygame.Color(90, 62, 50)
@@ -82,7 +86,7 @@ def text_objects(text, font, color=black):
     return text_surface, text_surface.get_rect()
 
 def message_display(text, x, y, color=black):
-    large_text = pygame.font.SysFont('WASTED', 50)
+    large_text = pygame.font.Font("images/Fonts/Wicked_Mouse.ttf", 35)
     text_surf, text_rect = text_objects(text, large_text, color)
     text_rect.center = (x, y)
     screen.blit(text_surf, text_rect)
@@ -112,18 +116,19 @@ def quitgame():
     quit()
     
 
-def crash(): #when the player crashes to themselves, a sound plays and a defeat message displays
+def crash(death): #when the player crashes to themselves, a sound plays and a defeat message displays
     pygame.mixer.Sound.play(crash_sound)
-    screen.blit(crash_img, (0,0))
-    pygame.display.flip()
+    #added code
+    for messages in range(3):
+        message_display(death, game.settings.width /2 * 15 + 3, game.settings.height /2 *15 - 20)
+        message_display(death, game.settings.width / 2 * 15, game.settings.height / 3 * 20, gold)
+        time.sleep(0.05)
+        message_display(death, game.settings.width /2 * 15 + 3, game.settings.height /2 *15 - 20, gold)
+        message_display(death, game.settings.width / 2 * 15, game.settings.height / 3 * 20, red)
+        time.sleep(0.05)
+    message_display(death, game.settings.width /2 * 15 + 3, game.settings.height /2 *15 - 20)
+    message_display(death, game.settings.width / 2 * 15, game.settings.height / 3 * 20, gold)
     time.sleep(2)
-    pygame.mixer.Sound.play(crash_sound)
-
-    message_display('WASTED', 
-                    game.settings.width / 2 * 15, 
-                    game.settings.height / 3 * 20, 
-                    black)
-    time.sleep(1)
         
 def initial_interface(): #menu
     intro = True
@@ -159,7 +164,6 @@ def initial_interface(): #menu
         pygame.display.update()
         pygame.time.Clock().tick(1500)
 
-
 def game_loop(player, fps=10): #10
     game.restart_game()
 
@@ -171,9 +175,16 @@ def game_loop(player, fps=10): #10
 
         move = human_move()
         #added code
-        if (game.snake.score - prev_score == 3) and (fps < 40):
+        if (game.snake.score - prev_score >= 3) and (fps < 40):
             prev_score = game.snake.score
             fps += 1
+        
+        if game.snake.multiplier == 2:
+            message_display('MAGIC HELMET', game.settings.width / 2 * 15 + 3, game.settings.height - 3)
+            message_display('MAGIC HELMET', game.settings.width / 2 * 15, game.settings.height, gold)
+
+        elif game.snake.multiplier == 1:
+            animation = False
 
         game.do_move(move)
 
@@ -186,11 +197,15 @@ def game_loop(player, fps=10): #10
             pygame.mixer.Sound.play(munch_sound)
         game.blit_score(white, screen)
 
+        if game.snake.multiplier == 2:
+            message_display('MAGIC HELMET', game.settings.width / 2 * 15 + 3, game.settings.height - 3)
+            message_display('MAGIC HELMET', game.settings.width / 2 * 15, game.settings.height, gold)
+
         pygame.display.flip()
 
-        fpsClock.tick(fps)
+        fpsClock.tick(fps + game.snake.speed_added)
 
-    crash()
+    crash(game.snake.death)
 
 # the instruct_screen method takes in a int which refers to the page number
 # and using the given button method, it will go to the related branch and display
