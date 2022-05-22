@@ -161,6 +161,7 @@ class Game:
         self.settings = Settings()
         self.snake = Snake()
         self.strawberry = Strawberry(self.settings)
+        self.collide = False
         self.move_dict = {0 : 'up',
                           1 : 'down',
                           2 : 'left',
@@ -192,8 +193,8 @@ class Game:
         
     def do_move(self, move):
         move_dict = self.move_dict
-        
         change_direction = move_dict[move]
+        self.collide = False
         
         if change_direction == 'right' and not self.snake.facing == 'left':
             self.snake.facing = change_direction
@@ -215,9 +216,11 @@ class Game:
                     self.snake.score += 2 * self.snake.multiplier
                 elif self.strawberry.style == '7':
                     self.snake.score += 3 * self.snake.multiplier
+                    
 
                 self.strawberry.random_pos(self.snake)
                 reward = 1
+                self.collide = True
                 #added code
                 if self.snake.score % 10 == 0:
                     self.snake.add_helmet()
@@ -237,7 +240,6 @@ class Game:
 
         if self.snake.helmet_duration < pygame.time.get_ticks():
             self.snake.remove_helmet()
-                    
         return reward
     
     def game_end(self):

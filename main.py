@@ -14,69 +14,76 @@ from pygame.locals import QUIT
 
 from game import Game
 
+#colors
 black = pygame.Color(0, 0, 0)
 white = pygame.Color(255, 255, 255)
+
 gold = pygame.Color(255, 191, 0)
 red = pygame.Color(255, 90, 0)
 pink = pygame.Color(255, 16, 240)
+yellow = pygame.Color(255, 191, 0)
+lBrown = pygame.Color(106, 78, 66)
+brown = pygame.Color(90, 62, 50)
+dBrown = pygame.Color(50, 26, 24)
+lBrown1 = pygame.Color(195, 155, 119)
 
 background = pygame.image.load('images/background.jpg')
 
+#fruit graphics for pg2 instructions
+bananaF = pygame.image.load('images/food1.bmp')
+eggPF = pygame.image.load('images/food2.bmp')
+gAppleF = pygame.image.load('images/food3.bmp')
+gAppleF1 = pygame.transform.scale(gAppleF, (40, 40)) 
+kiwiF = pygame.image.load('images/food4.bmp')
+lemonF = pygame.image.load('images/food5.bmp')
+mangoF = pygame.image.load('images/food6.bmp')
+orangeF = pygame.image.load('images/food7.bmp')
+peachF = pygame.image.load('images/food8.bmp')
+
+#initial interface graphics
 start_img_off = pygame.image.load('images/start_btn.png')
 start_img = pygame.image.load('images/start_btnOn.png')
-
 exit_img_off = pygame.image.load('images/exit_btn.png')
 exit_img = pygame.image.load('images/exit_btnOn.png')
-
 scroll_clsd_off = pygame.image.load('images/test1scroll_ac.png')
 scroll_clsd = pygame.image.load('images/test1scroll.png')
-
 scroll_opnd = pygame.image.load('images/scroll_opnd1.png')
-
-
-green = pygame.Color(0, 200, 0)
-bright_green = pygame.Color(0, 255, 0)
-red = pygame.Color(200, 0, 0)
-bright_red = pygame.Color(255, 0, 0)
-blue = pygame.Color(32, 178, 170)
-bright_blue = pygame.Color(32, 200, 200)
-yellow = pygame.Color(255, 205, 0)
-bright_yellow = pygame.Color(255, 255, 0)
-
 
 game = Game()
 rect_len = game.settings.rect_len
 snake = game.snake
 pygame.init()
 fpsClock = pygame.time.Clock()
-screen = pygame.display.set_mode((game.settings.width * 15, game.settings.height * 15))
+screen = pygame.display.set_mode((game.settings.width  * 15, 
+                                  game.settings.height * 15))
 pygame.display.set_caption('Gluttony')
 
 crash_img = pygame.image.load("images/splat.bmp")
 crash_img = pygame.transform.scale(crash_img, (400,400))
 crash_sound = pygame.mixer.Sound('./sound/crash.wav')
+munch_sound = pygame.mixer.Sound('./sound/munch.wav')
 
 title_font = pygame.font.Font("images/Fonts/Wicked_Mouse.ttf", 35)
 instruct_font = pygame.font.Font('images/Fonts/Minecraft.ttf', 14)
+instruct_top_font = pygame.font.Font('images/Fonts/Minecraft.ttf', 20)
+num_font = pygame.font.Font('images/Fonts/Minecraft.ttf', 28)
 
+#starting title
+starting_message_back = title_font.render("Gluttonous", True, black)
+starting_message = title_font.render("Gluttonous", True, yellow)
 
-starting_message_back = title_font.render("Gluttonous", True, (0, 0, 0))
-starting_message = title_font.render("Gluttonous", True, (255, 191, 0))
+#pg1 instruction messages, split into each line.
+instruct_msg = instruct_font.render("Navigate around the", True, lBrown)
+instruct_msg1 = instruct_font.render("screen with", True, lBrown)
+instruct_msg2 = instruct_font.render("arrow keys.", True, lBrown)
 
-instruct_msg = instruct_font.render("Navigate around the", True, (106, 78, 66))
-instruct_msg1 = instruct_font.render("screen with", True, (106, 78, 66))
-instruct_msg2 = instruct_font.render("arrow keys.", True, (106, 78, 66))
-
-instruct_msg3 = instruct_font.render("Eat as many fruits", True, (106, 78, 66))
-instruct_msg4 = instruct_font.render("as possible and", True, (106, 78, 66))
-instruct_msg5 = instruct_font.render("avoid crashing.", True, (106, 78, 66))
-
-exit_instruction = pygame.USEREVENT + 0 #this creates a custom event, at the 24th ID as the first 23 are reserved
+instruct_msg3 = instruct_font.render("Eat as many fruits", True, lBrown)
+instruct_msg4 = instruct_font.render("as possible and", True, lBrown)
+instruct_msg5 = instruct_font.render("avoid crashing.", True, lBrown)
 
 def text_objects(text, font, color=black):
     text_surface = font.render(text, True, color)
     return text_surface, text_surface.get_rect()
-
 
 def message_display(text, x, y, color=black):
     large_text = pygame.font.Font("images/Fonts/Wicked_Mouse.ttf", 35)
@@ -125,14 +132,12 @@ def crash(death): #when the player crashes to themselves, a sound plays and a de
         
 def initial_interface(): #menu
     intro = True
-    stop_loop = False
     while intro:
-
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT or intro == False:
                 quitgame()
-
+                
         screen.fill(white) #starting screen display
         screen.blit(background, (0, 0))
 
@@ -142,11 +147,19 @@ def initial_interface(): #menu
 
         screen.blit(starting_message,  
                    (game.settings.width / 6.2 * 15, 
-                    game.settings.height / 4.7 * 15))
+                    game.settings.height / 4.7 * 15)) 
 
-        button('', 80, 185, 100, 45, start_img_off, start_img, game_loop, 'human') #start button
-        button('', 240, 185, 100, 45, exit_img_off, exit_img, quitgame) #exit button
-        button('', 165, 280, 90, 35, scroll_clsd_off, scroll_clsd, instruct_screen)
+        button('', 80, 185, 100, 45, 
+               start_img_off, start_img, 
+               game_loop, 'human') 
+
+        button('', 240, 185, 100, 45, 
+               exit_img_off, exit_img, 
+               quitgame) #exit button
+
+        button('', 165, 280, 90, 35, 
+               scroll_clsd_off, scroll_clsd, 
+               instruct_screen, 1)
 
         pygame.display.update()
         pygame.time.Clock().tick(1500)
@@ -180,6 +193,8 @@ def game_loop(player, fps=10): #10
 
         game.snake.blit(rect_len, screen)
         game.strawberry.blit(screen)
+        if game.collide:
+            pygame.mixer.Sound.play(munch_sound)
         game.blit_score(white, screen)
 
         if game.snake.multiplier == 2:
@@ -192,33 +207,163 @@ def game_loop(player, fps=10): #10
 
     crash(game.snake.death)
 
-def instruc_exit():
-    exit_instruction
-
-def instruct_screen():
+# the instruct_screen method takes in a int which refers to the page number
+# and using the given button method, it will go to the related branch and display
+# the relevant instruction page.
+def instruct_screen(page):
     instruct = True
-    stop_loop = False
     while instruct:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quitgame()
-            elif event.type == exit_instruction:
-                instruct = False
+
+        if page == 1:
+
+            screen.fill(white)
+            screen.blit(background, (0, 0))
+
+            screen.blit(scroll_opnd,   (85 , 42))
+            screen.blit(instruct_top_font.render("How to play",
+                                                 True, 
+                                                 brown), 
+                                                 (155, 61))
+
+            instruct_msg_ls = [[instruct_msg,  142, 109],
+                               [instruct_msg1, 170, 129],
+                               [instruct_msg2, 170, 149],
+                               [instruct_msg3, 148, 185],
+                               [instruct_msg4, 157, 205],
+                               [instruct_msg5, 157, 225]]
+
+            for i in range(len(instruct_msg_ls)):
+                for j in range(len(instruct_msg_ls[i])):
+                    j = 0
+                    screen.blit(instruct_msg_ls[i][j], 
+                               (instruct_msg_ls[i][j + 1], 
+                                instruct_msg_ls[i][j + 2]))
+            # the for loops above iterates through the 2D instruction list, which contains the msg and their coordinates
+            # and blits the messages.
+
+            button('', 160, 360, 100, 50, 
+                   exit_img_off, exit_img, 
+                   initial_interface)
             
-        screen.fill(white)
-        screen.blit(background, (0, 0))
+            num_x = 171
+            for i in range (3):
+                if i + 1 == page:
+                    button('', num_x, 315, 20, 20, 
+                           num_font.render(str(i + 1), True, lBrown1), 
+                           num_font.render(str(i + 1), True, lBrown1))
+                else:
+                    button('', num_x, 315, 20, 20, 
+                           num_font.render(str(i + 1), True, dBrown), 
+                           num_font.render(str(i + 1), True, lBrown1), 
+                           instruct_screen, i + 1)     
+                num_x+=30  
+        
+        if page == 2 :
+            fruits1 = [kiwiF, orangeF, bananaF]
+            fruit1_y = 107
+            
+            fruits2 = [eggPF, lemonF, peachF]
+            fruit2_y = 166
 
-        screen.blit(scroll_opnd, (85 , 50))
+            screen.fill(white)
+            screen.blit(background, (0, 0))
 
-        screen.blit(instruct_msg, (142, 117))
-        screen.blit(instruct_msg1, (170,137))
-        screen.blit(instruct_msg2, (170,157))
+            screen.blit(scroll_opnd, (85 , 42))
+            screen.blit(instruct_top_font.render("Fruit Points", 
+                                                 True, 
+                                                 brown), 
+                                                 (158, 61))
 
-        screen.blit(instruct_msg3, (148, 193))
-        screen.blit(instruct_msg4, (157,213))
-        screen.blit(instruct_msg5, (157,233))
+            for fruit1 in fruits1:
+                screen.blit(fruit1, (176, fruit1_y))
+                fruit1_y += 17
 
-        button('', 160, 340, 100, 50, exit_img_off, exit_img, initial_interface)
+            screen.blit(instruct_font.render("~ 1 pts",
+                                             True,
+                                             brown), 
+                                             (197, 126))
+
+            for fruit2 in fruits2:
+                screen.blit(fruit2, (176, fruit2_y))
+                fruit2_y += 17
+
+            screen.blit(instruct_font.render("~ 2 pts",
+                                             True,
+                                             brown), 
+                                             (197, 185))
+        
+            screen.blit(mangoF, (176, 222))
+            screen.blit(instruct_font.render("~ 3 pts",
+                                             True,
+                                             brown), 
+                                             (197, 224))
+
+            button('', 160, 360, 100, 50, 
+                   exit_img_off, exit_img, 
+                   initial_interface)
+
+            num_x = 171
+            for i in range (3):
+                if i + 1 == page:
+                    button('', num_x, 315, 20, 20, 
+                           num_font.render(str(i + 1), True, lBrown1), 
+                           num_font.render(str(i + 1), True, lBrown1))
+                else:
+                    button('', num_x, 315, 20, 20, 
+                           num_font.render(str(i + 1), True, dBrown), 
+                           num_font.render(str(i + 1), True, lBrown1), 
+                           instruct_screen, i + 1)     
+                num_x+=30       
+        
+        if page == 3:
+            screen.fill(white)
+            screen.blit(background, (0, 0))
+
+            screen.blit(scroll_opnd,   (85 , 42))
+            screen.blit(instruct_top_font.render("The Green Apple.", 
+                                                 True,
+                                                 brown), 
+                                                 (130, 61))
+
+            screen.blit(gAppleF1, (190, 110))
+            
+            screen.blit(instruct_font.render("avoid the", 
+                                             True, 
+                                             brown), 
+                                             (179, 160))
+
+            screen.blit(instruct_font.render("green apple at", 
+                                             True, 
+                                             brown), 
+                                             (162, 180))
+            screen.blit(instruct_font.render("all cost.", 
+                                             True, 
+                                             brown), 
+                                             (185, 200))
+            screen.blit(instruct_font.render("or face death", 
+                                             True, 
+                                             brown), 
+                                             (162, 220))
+
+            button('', 160, 360, 100, 50, 
+                   exit_img_off, exit_img, 
+                   initial_interface)
+
+            num_x = 171
+            for i in range (3):
+                if i + 1 == page:
+                    button('', num_x, 315, 20, 20, 
+                           num_font.render(str(i + 1), True, lBrown1), 
+                           num_font.render(str(i + 1), True, lBrown1))
+                else:
+                    button('', num_x, 315, 20, 20, 
+                           num_font.render(str(i + 1), True, dBrown), 
+                           num_font.render(str(i + 1), True, lBrown1), 
+                           instruct_screen, i + 1)     
+                num_x+=30  
 
         pygame.display.update()
         pygame.time.Clock().tick(15)
