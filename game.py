@@ -161,7 +161,6 @@ class Game:
         self.settings = Settings()
         self.snake = Snake()
         self.strawberry = Strawberry(self.settings)
-        self.collide = False
         self.move_dict = {0 : 'up',
                           1 : 'down',
                           2 : 'left',
@@ -220,7 +219,6 @@ class Game:
 
                 self.strawberry.random_pos(self.snake)
                 reward = 1
-                self.collide = True
                 #added code
                 if self.snake.score % 10 == 0:
                     self.snake.add_helmet()
