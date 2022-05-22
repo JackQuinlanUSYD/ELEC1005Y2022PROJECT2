@@ -15,9 +15,10 @@ class Settings:
 
 class Snake:
     def __init__(self):
-        #added variables
+        #attributes for magic helmet
         self.multiplier = 1
         self.speed_added = 0
+
         self.death = 'CRASHED'
         
         self.image_up = pygame.image.load('images/snake_head_up.png')
@@ -39,8 +40,11 @@ class Snake:
         self.position = [6, 6]
         self.facing = "right"
         self.segments = [[6 - i, 6] for i in range(3)]
+        #makes sure the snake doesn't have a helmet
         self.remove_helmet()
+
         self.score = 0
+        #sets default death message to CRASHED
         self.death = 'CRASHED'
         self.helmet_duration = -1
         self.speed_added = 0
@@ -88,37 +92,44 @@ class Snake:
             self.position[1] += 1
         self.segments.insert(0, list(self.position))
 
-    #added helmet
+    #Adds magic helmet which changes the snakes appearance
+    #doubles points and increases speed.
     def add_helmet(self):
-
+        
+        #doubles point multiplier
         self.multiplier = 2
+        #adds 10 more frames per second.
         self.speed_added = 10
 
+        #changes sprite images
         self.image_up = pygame.image.load('images/snake_head_up_helmet.png')
         self.image_down = pygame.image.load('images/snake_head_down_helmet.png')
         self.image_left = pygame.image.load('images/snake_head_left_side_helmet.png')
         self.image_right = pygame.image.load('images/snake_head_right_side_helmet.png')
 
+        #changes attribute to 8 seconds in the future to record duration.
         self.helmet_duration = pygame.time.get_ticks() + 8000
         
-
+    #removes helmet from snake, calls this when duration reached.
     def remove_helmet(self):
 
+        #falls back to default values
         self.multiplier = 1
         self.speed_added = 0
 
+        #changes sprites back to default
         self.image_up = pygame.image.load('images/snake_head_up.png')
         self.image_down = pygame.image.load('images/snake_head_down.png')
         self.image_left = pygame.image.load('images/snake_head_left_side.png')
         self.image_right = pygame.image.load('images/snake_head_right_side.png')
 
-    #added code ended
 
         
 class Strawberry():
     def __init__(self, settings):
         self.settings = settings
         
+        #chooses the first 7 fruits.
         self.style = str(random.randint(1, 7))
         self.image = pygame.image.load('images/food' + str(self.style) + '.png')    
 
@@ -127,7 +138,7 @@ class Strawberry():
         self.initialize()
         
     def random_pos(self, snake):
-        #added
+
         self.change_time = 0
 
         self.style = str(random.randint(1, 8))
@@ -142,10 +153,9 @@ class Strawberry():
         if self.position in snake.segments:
             self.random_pos(snake)
 
-        #added code
+        #records the current time + 3 seconds to check for duration of green apple
         elif self.style == '8':
             self.change_time = pygame.time.get_ticks() + 3000
-        #end of added code
             
 
     def blit(self, screen):
@@ -166,6 +176,7 @@ class Game:
                           2 : 'left',
                           3 : 'right'}       
         pygame.init()
+        #plays munch sound effect
         self.munch_sound = pygame.mixer.Sound('./sound/munch-sound-effect.mp3')
         
     def restart_game(self):
@@ -193,7 +204,6 @@ class Game:
     def do_move(self, move):
         move_dict = self.move_dict
         change_direction = move_dict[move]
-        self.collide = False
         
         if change_direction == 'right' and not self.snake.facing == 'left':
             self.snake.facing = change_direction
@@ -207,19 +217,23 @@ class Game:
         self.snake.update()
         
         if self.snake.position == self.strawberry.position:
+            #if the strawberry is not a green apple
             if self.strawberry.style != '8':
                 pygame.mixer.Sound.play(self.munch_sound)
+                #added one point for first 4 fruits
                 if int(self.strawberry.style) < 5:
                     self.snake.score += 1 * self.snake.multiplier
+                #added two points for next 2 fruits
                 elif int(self.strawberry.style) < 7:
                     self.snake.score += 2 * self.snake.multiplier
+                #added three points for next fruit
                 elif self.strawberry.style == '7':
                     self.snake.score += 3 * self.snake.multiplier
                     
 
                 self.strawberry.random_pos(self.snake)
                 reward = 1
-                #added code
+                #calls add_helmet if the score is a direct multiple of 10
                 if self.snake.score % 10 == 0:
                     self.snake.add_helmet()
                 
@@ -231,11 +245,13 @@ class Game:
         if self.game_end():
             return -1
 
-        #added code
+        #if the fruit is a green apple
         if self.strawberry.style == '8':
+            #if the duration of the green apple is up, it turns into a new fruit.
             if pygame.time.get_ticks() > self.strawberry.change_time:
                 self.strawberry.random_pos(self.snake)
 
+        #if the magic helmet is finished, remove helmet
         if self.snake.helmet_duration < pygame.time.get_ticks():
             self.snake.remove_helmet()
         return reward
@@ -248,7 +264,9 @@ class Game:
             end = True
         if self.snake.segments[0] in self.snake.segments[1:]:
             end = True
-        #added code
+        #If the snake is on the green apple it will 
+        # change its death message to "BAD APPLE"
+        # and end the game
         if self.strawberry.style == '8' and self.snake.position == self.strawberry.position:
             self.snake.death = 'BAD APPLE'
             end = True

@@ -17,7 +17,6 @@ from game import Game
 #colors
 black = pygame.Color(0, 0, 0)
 white = pygame.Color(255, 255, 255)
-
 gold = pygame.Color(255, 191, 0)
 red = pygame.Color(255, 90, 0)
 pink = pygame.Color(255, 16, 240)
@@ -27,6 +26,7 @@ brown = pygame.Color(90, 62, 50)
 dBrown = pygame.Color(50, 26, 24)
 lBrown1 = pygame.Color(195, 155, 119)
 
+#background image
 background = pygame.image.load('images/background.jpg')
 
 #fruit graphics for pg2 instructions
@@ -49,8 +49,10 @@ scroll_clsd_off = pygame.image.load('images/test1scroll_ac.png')
 scroll_clsd = pygame.image.load('images/test1scroll.png')
 scroll_opnd = pygame.image.load('images/scroll_opnd1.png')
 
+#starts the game
 game = Game()
 rect_len = game.settings.rect_len
+#makes the snake
 snake = game.snake
 pygame.init()
 fpsClock = pygame.time.Clock()
@@ -58,10 +60,13 @@ screen = pygame.display.set_mode((game.settings.width  * 15,
                                   game.settings.height * 15))
 pygame.display.set_caption('Gluttony')
 
+#crash and background sounds and images 
 crash_img = pygame.image.load("images/splat.bmp")
 crash_img = pygame.transform.scale(crash_img, (400,400))
 crash_sound = pygame.mixer.Sound('./sound/crash.wav')
+background_music = pygame.mixer.Sound('./sound/candy.wav')
 
+#new title images
 title_font = pygame.font.Font("images/Fonts/Wicked_Mouse.ttf", 35)
 instruct_font = pygame.font.Font('images/Fonts/Minecraft.ttf', 14)
 instruct_top_font = pygame.font.Font('images/Fonts/Minecraft.ttf', 20)
@@ -114,10 +119,13 @@ def quitgame():
     pygame.quit()
     quit()
     
-
-def crash(death): #when the player crashes to themselves, a sound plays and a defeat message displays
+#Called when the snake loses, Takes death message as parameter and outputs death message and ends round
+def crash(death): #
+    #stops the music     
+    pygame.mixer.stop()
+    #plays crash sound
     pygame.mixer.Sound.play(crash_sound)
-    #added code
+    #displays crash message alternating colours 3 times
     for messages in range(3):
         message_display(death, game.settings.width /2 * 15 + 3, game.settings.height /2 *15 - 20)
         message_display(death, game.settings.width / 2 * 15, game.settings.height / 3 * 20, gold)
@@ -125,9 +133,11 @@ def crash(death): #when the player crashes to themselves, a sound plays and a de
         message_display(death, game.settings.width /2 * 15 + 3, game.settings.height /2 *15 - 20, gold)
         message_display(death, game.settings.width / 2 * 15, game.settings.height / 3 * 20, red)
         time.sleep(0.05)
+    #displays crash message in the same colour for 2 seconds
     message_display(death, game.settings.width /2 * 15 + 3, game.settings.height /2 *15 - 20)
     message_display(death, game.settings.width / 2 * 15, game.settings.height / 3 * 20, gold)
     time.sleep(2)
+
         
 def initial_interface(): #menu
     intro = True
@@ -163,8 +173,11 @@ def initial_interface(): #menu
         pygame.display.update()
         pygame.time.Clock().tick(1500)
 
-def game_loop(player, fps=10): #10
+def game_loop(player, fps=10): #Plays the game
     game.restart_game()
+
+    #play background music when the game starts
+    pygame.mixer.Sound.play(background_music, -1)
 
     fps = 5
     prev_score = 0
@@ -173,18 +186,16 @@ def game_loop(player, fps=10): #10
         pygame.event.pump()
 
         move = human_move()
-        #added code
+        #If the score has changed by 3 points or more the fps increases
         if (game.snake.score - prev_score >= 3) and (fps < 40):
             prev_score = game.snake.score
             fps += 1
         
+        #uses increased multiplier to check if to show MAGIC HELMET message
         if game.snake.multiplier == 2:
             message_display('MAGIC HELMET', game.settings.width / 2 * 15 + 3, game.settings.height - 3)
             message_display('MAGIC HELMET', game.settings.width / 2 * 15, game.settings.height, gold)
-
-        elif game.snake.multiplier == 1:
-            animation = False
-
+            
         game.do_move(move)
 
         screen.fill(black)
@@ -194,12 +205,14 @@ def game_loop(player, fps=10): #10
         game.strawberry.blit(screen)
         game.blit_score(white, screen)
 
+        #uses increased multiplier to check if to show MAGIC HELMET message (repeated for faster flashing)
         if game.snake.multiplier == 2:
             message_display('MAGIC HELMET', game.settings.width / 2 * 15 + 3, game.settings.height - 3)
             message_display('MAGIC HELMET', game.settings.width / 2 * 15, game.settings.height, gold)
 
         pygame.display.flip()
 
+        #runs off the fps accounting for the magic helmet speed increase
         fpsClock.tick(fps + game.snake.speed_added)
 
     crash(game.snake.death)
